@@ -160,11 +160,13 @@ if __name__ == '__main__':
     work_space = os.path.split(sys.argv[0])[0]
     os.chdir(work_space)
 
-    name_calss = ['cup', 'phone', 'Target', 'fan', 'mouse', 'person']
+    name_calss = ['Target', 'person', 'cup', 'fan']
+
     my_ssd = TrainSSD(weights_path='./weight/weights_SSD300.hdf5',
                       XML_Data_path='my_new_data.pkl',
                       ImgDir_path='D:\my_data\JPEGImages\\',
                       PriorBoxes_path='prior_boxes_ssd300.pkl',
                       classes_name=name_calss)
+
     my_ssd.SD_fn_BuildSSD()
     my_ssd.SD_fn_TrainSSD()

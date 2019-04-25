@@ -7,6 +7,26 @@ from keras.applications.imagenet_utils import preprocess_input
 from rely.ssd_utils import BBoxUtility
 from rely.ssd_v2 import SSD300v2
 
+STANDARD_COLORS = [
+    (100, 30, 22), (120, 40, 31), (81, 46, 95), (74, 35, 90), (21, 67, 96), (27, 79, 114), (14, 98, 81),
+    (11, 83, 69), (20, 90, 50), (24, 106, 59), (125, 102, 8), (126, 81, 9), (120, 66, 18), (110, 44, 0),
+    (66, 73, 73), (27, 38, 49), (192, 57, 43), (231, 76, 60), (155, 89, 182), (142, 68, 173), (41, 128, 185),
+    (52, 152, 219), (26, 188, 156), (22, 160, 133), (39, 174, 96), (46, 204, 113), (243, 156, 18), (230, 126, 34),
+    (211, 84, 0), (127, 140, 141), (39, 55, 70)
+]
+
+def color_gen():
+    """
+    颜色生成器
+    :return:
+    """
+    global STANDARD_COLORS
+    while True:
+        # 随机排序
+        np.random.shuffle(STANDARD_COLORS)
+        for color in STANDARD_COLORS:
+            yield color
+
 class SSD_test(object):
 
     def __init__(self, weight_path, class_nam_list):
@@ -95,18 +115,27 @@ class SSD_test(object):
         """
         h, w = img.shape[:2]
         offset = round(h * 0.02)
-        text_height = (h * 0.0012)
+        text_height = (h * 0.0015)
         line_thickness = round(h * 0.005)
         text_thickness = round(h * 0.004)
-        for lab, score, xmin, ymin, xmax, ymax in preds:
+        gen_color = color_gen()
+        for i, pred in enumerate(preds):
+            lab, score, xmin, ymin, xmax, ymax = pred
             text = lab + ' {:.3f}'.format(score)
             xmin = int(round(xmin * w))
             ymin = int(round(ymin * h))
             xmax = int(round(xmax * w))
             ymax = int(round(ymax * h))
-            cv2.rectangle(img, (xmin, ymin), (xmax, ymax), (0, 0, 255), line_thickness)
-            cv2.putText(img, text, (xmin, ymin - offset), cv2.FONT_HERSHEY_SIMPLEX, text_height,
-                        (0, 0, 255), text_thickness)
+            if ymin - offset <= 0:
+                T_x = xmin + offset
+                T_y = ymin + round(2.5*offset)
+            else:
+                T_x = xmin + offset
+                T_y = ymin - offset
+            color = gen_color.__next__()
+            cv2.rectangle(img, (xmin, ymin), (xmax, ymax), color, line_thickness)
+            cv2.putText(img, text, (T_x, T_y), cv2.FONT_HERSHEY_SIMPLEX, text_height,
+                        color, text_thickness)
         return img
             
 
@@ -117,15 +146,22 @@ if __name__ == '__main__':
     work_space = os.path.split(sys.argv[0])[0]
     os.chdir(work_space)
 
-    weight_path = './weights/weights.01-1.64180.h5'
-    class_nam_list = ['cup', 'phone', 'Target', 'fin', 'mouse', 'person']
+    weight_path = './weights/weights_SSD300.hdf5'
+    class_nam_list = ['Aeroplane', 'Bicycle', 'Bird', 'Boat', 'Bottle',
+                   'Bus', 'Car', 'Cat', 'Chair', 'Cow', 'Diningtable',
+                   'Dog', 'Horse', 'Motorbike', 'Person', 'Pottedplant',
+                   'Sheep', 'Sofa', 'Train', 'Tvmonitor']
 
     ssd = SSD_test(weight_path, class_nam_list)
-    img = cv2.imread('test.jpg', )
-    img = cv2.resize(img, (480, 320))
-    pred = ssd.Predict(img, 0.9)
+
+    img = cv2.imread('test2.jpg', )
+    # img = cv2.imread('test.jpg', )
+    # img = cv2.imread('fishbike.jpg', )
+
+    img = cv2.resize(img, (720, 480))
+    pred = ssd.Predict(img, 0.6)
     # print(pred)
-    pred = ssd.filter(pred, ['fin', 'mouse'])
+    pred = ssd.filter(pred, class_nam_list)
     img = ssd.draw_img(img, pred)
     cv2.imshow('test', img)
     cv2.waitKey()
