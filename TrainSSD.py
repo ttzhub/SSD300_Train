@@ -17,7 +17,7 @@ from rely.generate import Generator
 
 class TrainSSD(object):
 
-    def __init__(self, weights_path='', XML_Data_path='', ImgDir_path='', PriorBoxes_path='', classes_name=None):
+    def __init__(self, weights_path='', Label_Data_path='', ImgDir_path='', PriorBoxes_path='', classes_name=None):
         # 模型建立初始化
         self.voc_classes = classes_name
         self.NUM_CLASSES = len(self.voc_classes) + 1
@@ -26,7 +26,7 @@ class TrainSSD(object):
         self.bbox_util = BBoxUtility(self.NUM_CLASSES)
 
         # 模型训练初始化
-        self.XML_Data_path = XML_Data_path      # 前处理文件路径
+        self.XML_Data_path = Label_Data_path      # 前处理文件路径
         self.ImgDir_path = ImgDir_path          # 图片集路径
         self.PriorBoxes_path = PriorBoxes_path  # 预设边框文件路径
 
@@ -163,7 +163,7 @@ if __name__ == '__main__':
     name_calss = ['Target', 'person', 'cup', 'fan']
 
     my_ssd = TrainSSD(weights_path='./weight/weights_SSD300.hdf5',
-                      XML_Data_path='my_new_data.pkl',
+                      Label_Data_path='my_new_data.pkl',
                       ImgDir_path='D:\my_data\JPEGImages\\',
                       PriorBoxes_path='prior_boxes_ssd300.pkl',
                       classes_name=name_calss)

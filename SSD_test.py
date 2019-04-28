@@ -146,23 +146,37 @@ if __name__ == '__main__':
     work_space = os.path.split(sys.argv[0])[0]
     os.chdir(work_space)
 
+    # 这里是权值文件的路径，就是下载好的那个
     weight_path = './weights/weights_SSD300.hdf5'
+    # 这里是VOC的20类目标，有严格的顺序 与 name.txt 中的顺序一致
     class_nam_list = ['Aeroplane', 'Bicycle', 'Bird', 'Boat', 'Bottle',
                    'Bus', 'Car', 'Cat', 'Chair', 'Cow', 'Diningtable',
                    'Dog', 'Horse', 'Motorbike', 'Person', 'Pottedplant',
                    'Sheep', 'Sofa', 'Train', 'Tvmonitor']
 
+    # 创建一个 SSD_test 类的实例 并将刚才的权值文件路径，及类别名称列表传入
     ssd = SSD_test(weight_path, class_nam_list)
 
+    # 使用 opencv 读取一张图片
     img = cv2.imread('test2.jpg', )
     # img = cv2.imread('test.jpg', )
     # img = cv2.imread('fishbike.jpg', )
 
+    # 对图片进行缩放
     img = cv2.resize(img, (720, 480))
+
+    # 调用上面创建实例的 Predict 方法 图片img 进行预测
+    # 其中后面的参数为置信度阈值，检测结果中置信度低于这个值的目标会被过滤掉
     pred = ssd.Predict(img, 0.6)
-    # print(pred)
+
+    # 对获得的预测结果按类别名称过滤
+    # 第一个参数是上步的预测结果
+    # 第二个参数是一个列表，只有在列表中的类别才会被保留，其他的全部过滤，这里我们保留所有类别
     pred = ssd.filter(pred, class_nam_list)
+
+    # 将预测结果绘制到图片中
     img = ssd.draw_img(img, pred)
+    # 显示
     cv2.imshow('test', img)
     cv2.waitKey()
     cv2.destroyAllWindows()
