@@ -29,10 +29,16 @@ class TransData(object):
                     ymax = float(bounding_box.find('ymax').text)/height
                 bounding_box = [xmin, ymin, xmax, ymax]
                 bounding_boxes.append(bounding_box)
+
+                # 有后缀的同学使用
                 class_name = object_tree.find('name').text
+
+                # 没后缀的同学使用
+                # class_name = object_tree.find('name').text + '图片文件的后缀'
+
                 one_hot_class = self.one_hot(class_name)
                 one_hot_classes.append(one_hot_class)
-            image_name = root.find('filename').text + '.jpg'
+            image_name = root.find('filename').text
             bounding_boxes = np.asarray(bounding_boxes)
             # print('bounding_boxes:{}'.format(bounding_boxes))
             one_hot_classes = np.asarray(one_hot_classes)
@@ -77,8 +83,13 @@ class TransData(object):
 import pickle
 
 def main():
+    # 获取标记数据
+    # data_path 为标记产生的 .xml 文件所在的文件夹路径
+    # class_name_path 为 4.1 中创建的类别名称文件路径
     data = TransData(data_path='E:\my_data\Annotations\\',
                      class_name_path='E:\my_data\\name.txt').data
+
+    # 保存写入文件
     pickle.dump(data, open('my_new_data.pkl', 'wb'))
     print("提取成功！！！！")
 

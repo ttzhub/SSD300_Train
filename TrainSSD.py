@@ -1,5 +1,3 @@
-# 依赖文件:     ssd_v2.py    ssd_utils.py
-#               weights.02-3.07.hdf5
 
 import cv2
 import numpy as np
@@ -70,7 +68,7 @@ class TrainSSD(object):
                   'conv5_1', 'conv5_2', 'conv5_3', 'pool5', 'fc6', 'fc7',
                   'conv6_1', 'conv6_2',
                   'conv7_1', 'conv7_1z', 'conv7_2',
-                  'conv8_1', 'conv8_2',
+                  'conv8_1',
                   'pool6'
                   ]
         for L in self.model.layers:
@@ -79,11 +77,22 @@ class TrainSSD(object):
 
 
         self.base_lr = 3e-4                     # 定义学习率
+
+        # Tensorboard
+        tensorboard = keras.callbacks.TensorBoard(log_dir='./logs',
+                                                  histogram_freq=0,
+                                                  batch_size=8,
+                                                  write_graph=True,
+                                                  write_grads=True,
+                                                  write_images=False,
+                                                  embeddings_freq=0,)
+
         # 定义回合
-        callbacks = [keras.callbacks.ModelCheckpoint('.weights/weights.{epoch:02d}-{val_loss:.4f}.hdf5',
+        callbacks = [keras.callbacks.ModelCheckpoint('./weights/weights.{epoch:02d}-{val_loss:.4f}.hdf5',
                                                      verbose=1,
                                                      save_weights_only=True),
-                     keras.callbacks.LearningRateScheduler(self.schedule)]
+                     keras.callbacks.LearningRateScheduler(self.schedule),
+                     tensorboard]
         # 配置训练
 
         optim = keras.optimizers.Adam(lr=self.base_lr)
@@ -160,12 +169,14 @@ if __name__ == '__main__':
     work_space = os.path.split(sys.argv[0])[0]
     os.chdir(work_space)
 
+    # 标记数据集中的类别名称
+    # 需要和教程4.1中的 name.txt 文件中的类别名称一致 包括顺序和字符一致
     name_calss = ['Target', 'person', 'cup', 'fan']
 
-    my_ssd = TrainSSD(weights_path='./weight/weights_SSD300.hdf5',
-                      Label_Data_path='my_new_data.pkl',
-                      ImgDir_path='D:\my_data\JPEGImages\\',
-                      PriorBoxes_path='prior_boxes_ssd300.pkl',
+    my_ssd = TrainSSD(weights_path='./weight/weights_SSD300.hdf5',      # 权值文件，后期可更改为训练好的权值文件，以实继续训练
+                      Label_Data_path='my_new_data.pkl',                # 教程5.1中生成的标记数据文件，包含标注信息
+                      ImgDir_path='D:\my_data\JPEGImages\\',            # 数据集图片保存位置--文件夹
+                      PriorBoxes_path='prior_boxes_ssd300.pkl',         # 这里是预设框文件，不用改
                       classes_name=name_calss)
 
     my_ssd.SD_fn_BuildSSD()
